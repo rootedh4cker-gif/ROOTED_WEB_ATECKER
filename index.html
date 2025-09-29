@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rooted Web Attacker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@700&family=Space+Grotesk:wght@400;500&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #121212;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: url('https://i.postimg.cc/XJ578Hxn/Black-Hat-Hacker-i-Phone-Wallpaper.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+            overflow-y: auto; /* Allow scrolling for content */
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8); /* Darker overlay for red/black theme */
+            z-index: 1;
+        }
+
+        .container {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.4), 0 0 20px rgba(0, 0, 0, 0.8); /* Red shadow */
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+            position: relative; /* For z-index */
+            z-index: 2; /* Above the overlay */
+            border: 1px solid rgba(255, 0, 0, 0.6); /* Subtle red border outline */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            font-size: 1.1em;
+            color: #b0b0b0;
+            margin-bottom: 20px;
+            font-family: 'Space Grotesk', sans-serif; /* Space Grotesk font */
+            font-weight: 400;
+        }
+
+        h1 {
+            color: #ff3333; /* Bright red for title */
+            font-size: 2.8em;
+            margin-bottom: 25px;
+            font-weight: 700; /* Bold title */
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+            font-family: 'Josefin Sans', sans-serif; /* Josefin Sans font */
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 14px 18px;
+            width: 60%;
+            min-width: 250px; /* Ensure a minimum width */
+            border: 2px solid #cc0000; /* Darker red border */
+            border-radius: 10px;
+            background: #2c2c2c;
+            color: #e0e0e0;
+            font-size: 1.05em;
+            outline: none;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease, background 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="text"]:focus {
+            border-color: #ff3333; /* Bright red on focus */
+            background: #3a3a3a;
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
+        }
+
+        .custom-select {
+            position: relative;
+            display: inline-block;
+            min-width: 150px;
+            border-radius: 10px;
+            overflow: hidden; /* Hide default arrow */
+        }
+
+        select {
+            appearance: none; /* Remove default arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding: 14px 18px;
+            padding-right: 45px; /* Space for custom arrow/icon */
+            border: 2px solid #cc0000; /* Darker red border */
+            border-radius: 10px;
+            background: #2c2c2c;
+            color: #e0e0e0;
+            font-size: 1.05em;
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease, background 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        select:focus {
+            border-color: #ff3333; /* Bright red on focus */
+            background: #3a3a3a;
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
+        }
+
+        .custom-select::after {
+            content: '▼'; /* Custom arrow */
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            color: #ff3333; /* Red arrow */
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+
+        .main-button { /* Renamed for clarity vs. copy button */
+            padding: 14px 35px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #cc0000, #ff3333); /* Red gradient */
+            color: #e0e0e0;
+            font-size: 1.15em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.4s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            margin-bottom: 25px;
+        }
+
+        .main-button:hover {
+            background: linear-gradient(45deg, #ff3333, #ff6666); /* Lighter red on hover */
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
+        }
+
+        .social-buttons {
+            margin: 25px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .social-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #cc0000, #ff3333); /* Red gradient */
+            color: #e0e0e0;
+            font-size: 1.0em;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        .social-button:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        #output {
+            margin-top: 30px;
+            text-align: left;
+            background: #2c2c2c;
+            padding: 25px;
+            border-radius: 12px;
+            max-height: 450px; /* Slightly increased height */
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95em;
+            color: #00ff00; /* Green code color */
+            position: relative;
+            border: 1px solid #4a4a4a;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            line-height: 1.5;
+            /* No padding-bottom here, as the button is outside the pre */
+        }
+
+        .error {
+            color: #ff6666; /* Lighter red for errors */
+            font-weight: bold;
+        }
+
+        .copy-button-container {
+            margin-top: 20px; /* Space between output and copy button */
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            position: relative; /* For z-index */
+            z-index: 2; /* Ensure it's above the overlay */
+        }
+
+        .copy-button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #009900, #00cc00); /* Green gradient for copy button */
+            color: #ffffff;
+            font-size: 1.0em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        .copy-button:hover {
+            background: linear-gradient(45deg, #00cc00, #00ff00); /* Lighter green on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+
+        .footer {
+            margin-top: 20px; /* Space between copy button and footer */
+            font-size: 0.9em;
+            color: #b0b0b0;
+            font-weight: 500;
+            position: relative; /* For z-index */
+            z-index: 2; /* Ensure it's above the overlay */
+        }
+
+        .footer a {
+            color: #ff3333; /* Red link color */
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #ff6666;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .input-group {
+                flex-direction: column;
+            }
+            input[type="text"] {
+                width: 90%;
+            }
+            .custom-select {
+                width: 90%;
+            }
+            .social-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .social-button {
+                width: 90%;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .copy-button-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">A Project By Rooted H4CKER</div>
+        <h1>Rooted WEB Attacker </h1>
+        <div class="input-group">
+            <input type="text" id="urlInput" placeholder="Enter URL (e.g., https://example.com)">
+            <div class="custom-select">
+                <select id="scrapeType">
+                    <option value="all">🌐 All</option>
+                    <option value="html">📄 HTML</option>
+                    <option value="css">🎨 CSS</option>
+                    <option value="js">🚀 JavaScript</option>
+                    <option value="api">📡 API</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <button class="main-button" onclick="fetchSourceCode()">Start Attack</button>
+        </div>
+        <div class="social-buttons">
+            <a href="https://whatsapp.com/channel/0029Vb7JH0r9RZAeMIjGqv0s" class="social-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.36 14.83c-.14.07-.3.11-.46.11-.24 0-.47-.07-.67-.21-.29-.2-.58-.48-.81-.81-.57-.88-1.28-1.94-2.27-2.93-.99-.99-2.05-1.7-2.93-2.27-.33-.23-.61-.52-.81-.81-.14-.2-.21-.43-.21-.67 0-.16.04-.32.11-.46l.95-1.9c.14-.28.39-.47.69-.47h1.13c.3 0 .56.19.67.47l.95 2.85c.11.28.06.6-.14.83l-.95.95c.24.55.54 1.08.92 1.59.51.38 1.04.68 1.59.92l.95-.95c.23-.2.55-.25.83-.14l2.85.95c.28.11.47.37.47.67v1.13c0 .3-.19.55-.47.69l-1.9.95z"/>
+                </svg>
+                GET More Tools Free
+            </a>
+            <a href="https://wa.me/+989136701118?text=I+Want+To+Buy+Source+code" class="social-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.07-1.02-.38-1.58-.71-1.17-.7-1.83-1.14-2.96-1.82-.26-.16-.13-.46.13-.62.55-.34 1.02-.63 1.36-.84 1.58-.98 2.11-1.3 2.28-1.94.02-.09-.02-.42-.35-.29-1.06.42-4.03 1.56-5.49 2.12-.38.15-.76.22-1.11.22-.55 0-1.65-.22-2.45-.49-.38-.13-.73-.28-.71-.65.02-.34.28-.62.67-.75 2.88-1 4.77-1.76 5.72-2.09 3.29-1.15 3.98-1.35 4.43-1.35.11 0 .18.04.22.11.03.07.03.17-.02.28z"/>
+                </svg>
+                Purchase This Tool Source Code
+            </a>
+        </div>
+        <pre id="output">Hacked source code will appear here...</pre>
+        <div class="copy-button-container">
+            <button class="copy-button" onclick="copyOutput()">Copy Data</button>
+        </div>
+        <p class="footer">Rootedh4cker TOOLS. All Rights Reserved. Designed by <a href="https://whatsapp.com/channel/0029VbAzazM2kNFp4p1qIZ2P" target="_blank">FTGM Hacks</a></p>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        const urlInput = document.getElementById('urlInput');
+        const scrapeType = document.getElementById('scrapeType');
+        const footerLink = document.querySelector('.footer a');
+
+        // Update footer link based on saved information
+        if (footerLink) {
+            footerLink.href = "https://whatsapp.com/channel/0029Vb7JH0r9RZAeMIjGqv0s";
+            footerLink.textContent = "Rooted Hacks";
+        }
+        // Update WhatsApp channel link based on saved information
+        const whatsappButton = document.querySelector('.social-buttons a[href*="whatsapp.com/channel"]');
+        if (whatsappButton) {
+            whatsappButton.href = "https://whatsapp.com/channel/0029Vb7JH0r9RZAeMIjGqv0s";
+        }
+
+        // Update Telegram channel link based on saved information
+        const telegramButton = document.querySelector('.social-buttons a[href*="t.me"]');
+        if (telegramButton) {
+            telegramButton.href = "https://t.me/ Hackers X";
+        }
+
+
+        // Helper function to validate URL
+        function isValidURL(url) {
+            try {
+                new URL(url);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        // Helper function to display output
+        function displayOutput(content, error = false) {
+            output.className = error ? 'error' : '';
+            output.textContent = content;
+
+            // Make sure the copy button container is always there and visible when output is present
+            const copyButtonContainer = document.querySelector('.copy-button-container');
+            if (copyButtonContainer) {
+                copyButtonContainer.style.display = error ? 'none' : 'flex'; // Hide if error, show if not
+                const copyBtn = copyButtonContainer.querySelector('.copy-button');
+                if (copyBtn) {
+                    copyBtn.textContent = 'Copy Code'; // Reset button text
+                }
+            }
+        }
+
+        // Helper function to copy output content
+        function copyOutput() {
+            // Get the text content from the output div
+            const text = output.textContent.trim();
+
+            // Try the modern Clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const copyBtn = document.querySelector('.copy-button-container .copy-button');
+                    if (copyBtn) {
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => {
+                            copyBtn.textContent = 'Copy Code';
+                        }, 2000);
+                    }
+                }).catch(err => {
+                    console.error('Failed to copy using Clipboard API: ', err);
+                    // Fallback to execCommand if Clipboard API fails
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                // Fallback for older browsers
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        // Fallback copy method for older browsers
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0"; // Make it invisible
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                const msg = successful ? 'successful' : 'unsuccessful';
+                console.log('Fallback copying text command was ' + msg);
+                const copyBtn = document.querySelector('.copy-button-container .copy-button');
+                if (copyBtn) {
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy Code';
+                    }, 2000);
+                }
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                displayOutput('Failed to copy content.', true);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // Helper function to fetch content with proxy fallback
+        async function fetchWithProxy(url) {
+            const proxies = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                url
+            ];
+
+            for (const proxyUrl of proxies) {
+                try {
+                    const response = await fetch(proxyUrl, { mode: 'cors' });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return await response.text();
+                } catch (error) {
+                    if (proxyUrl === url) {
+                        throw new Error(`All attempts failed: ${error.message}`);
+                    }
+                }
+            }
+        }
+
+        // Helper function to identify potential API endpoints
+        function findPotentialApiEndpoints(html, baseUrl) {
+            const apiPatterns = [
+                /\/api\/[^"'\s]+/g, // /api/something
+                /https?:\/\/[^"'\s]+\.(json|xml)(\?[^"'\s]*)?/g, // .json or .xml files with optional query params
+                /https?:\/\/[^"'\s]+\?[^"'\s]+/g, // URLs with query parameters (often indicative of APIs)
+                /(fetch|axios)\(['"]([^"']+)['"]/g, // JS fetch/axios calls
+                /\.ajax\({[^}]*url\s*:\s*['"]([^"']+)['"]/g // jQuery AJAX calls
+            ];
+            const endpoints = new Set();
+
+            // Extract from HTML content
+            for (const pattern of apiPatterns) {
+                let match;
+                while ((match = pattern.exec(html)) !== null) {
+                    endpoints.add(match[1] || match[0]); // Take the captured group or the whole match
+                }
+            }
+
+            // Extract from script tags
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const scripts = Array.from(doc.querySelectorAll('script')).map(script => script.textContent);
+            scripts.forEach(script => {
+                for (const pattern of apiPatterns) {
+                    let match;
+                    while ((match = pattern.exec(script)) !== null) {
+                        endpoints.add(match[1] || match[0]);
+                    }
+                }
+            });
+
+            // Resolve relative URLs
+            const resolvedEndpoints = Array.from(endpoints).map(url => {
+                try {
+                    // Prepend baseUrl if it's a relative path
