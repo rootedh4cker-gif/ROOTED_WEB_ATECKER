@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech_X | Source Code Finder</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for the dark/neon theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-green': '#32CD32', // Lime green
+                        'neon-cyan': '#00FFFF',   // Cyan
+                        'dark-bg': '#0D1117',    // Deep charcoal/black
+                        'console-bg': '#161B22', // Slightly lighter console bg
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'Lucida Console', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for the hacker/neon effect */
+        body {
+            background-color: #0D1117;
+            font-family: 'Inter', sans-serif;
+            color: #E6E6E6;
+        }
+
+        .neon-border {
+            border: 2px solid #32CD32;
+            box-shadow: 0 0 10px #00FFFF, 0 0 20px rgba(50, 205, 50, 0.7);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .neon-button {
+            background-color: #32CD32;
+            color: #0D1117;
+            text-shadow: 0 0 5px #00FFFF;
+            box-shadow: 0 0 5px #32CD32;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .neon-button:hover {
+            background-color: #00FFFF;
+            box-shadow: 0 0 15px #00FFFF, 0 0 25px #32CD32;
+            transform: translateY(-2px);
+        }
+
+        .code-output {
+            background-color: #161B22;
+            border: 1px dashed #00FFFF;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            min-height: 200px;
+        }
+
+        /* Subtle glitch effect on loading */
+        .glitch-text {
+            animation: text-shadow 1.5s infinite alternate;
+        }
+
+        @keyframes text-shadow {
+            0% { text-shadow: 2px 2px #32CD32, -2px -2px #00FFFF; }
+            50% { text-shadow: 1px 1px #00FFFF, -1px -1px #32CD32; }
+            100% { text-shadow: 3px 3px #32CD32, -3px -3px #00FFFF; }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex justify-center items-start min-h-screen">
+
+    <div class="w-full max-w-4xl p-6 md:p-10 rounded-xl neon-border">
+        <!-- Header -->
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-8 text-center tracking-wider" style="color: #00FFFF; text-shadow: 0 0 10px #00FFFF, 0 0 20px #32CD32;">
+            <span class="text-neon-green">[</span> Tech_X <span class="text-neon-green">]</span>
+        </h1>
+        <p class="text-center mb-10 text-lg text-gray-300">
+            Source Code Analysis Module <span style="color: #32CD32;">&gt;_</span>
+        </p>
+
+        <!-- Input Form -->
+        <div class="flex flex-col md:flex-row gap-4 mb-8">
+            <input
+                type="url"
+                id="urlInput"
+                placeholder="Enter Target URL (e.g., https://example.com)"
+                value="https://example.com"
+                class="flex-grow p-4 bg-console-bg text-neon-cyan rounded-lg focus:outline-none focus:ring-2 focus:ring-neon-cyan border border-gray-700 font-mono"
+            />
+            <button
+                id="fetchButton"
+                onclick="fetchSourceCode()"
+                class="neon-button px-6 py-4 rounded-lg font-bold uppercase tracking-wider text-sm md:text-base border-2 border-neon-green"
+            >
+                <span id="buttonText">Analyze Code</span>
+            </button>
+        </div>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="h-6 text-center text-sm mb-4 text-neon-green font-mono"></div>
+
+        <!-- Output Console -->
+        <div class="relative">
+            <h2 class="text-xl font-bold mb-3 text-neon-cyan">
+                &gt; Source Output
+            </h2>
+            <pre id="codeOutput" class="code-output p-5 rounded-lg font-mono text-gray-100 shadow-xl shadow-cyan-900/30">
+[Awaiting Target URL...]
+</pre>
+        </div>
+
+        <!-- Explanation of the CORS bypass -->
+        <p class="mt-8 text-sm text-gray-500 border-t border-gray-700 pt-4">
+            *Note: Browsers prevent direct access to external website source code (CORS policy). This tool utilizes a public proxy (`allorigins.win`) for demonstration purposes to bypass this security measure on the client side. For production-grade tools, a secure server-side proxy is required.
+        </p>
+
+    </div>
+
+    <script>
+        // Constants and Element References
+        const urlInput = document.getElementById('urlInput');
+        const codeOutput = document.getElementById('codeOutput');
+        const statusMessage = document.getElementById('statusMessage');
+        const buttonText = document.getElementById('buttonText');
+        const fetchButton = document.getElementById('fetchButton');
+
+        // Public CORS Proxy URL (used for demonstration purposes)
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+
+        /**
+         * Fetches and displays the raw source code of the given URL using a CORS proxy.
+         */
+        async function fetchSourceCode() {
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                statusMessage.textContent = "ERROR: Please enter a valid URL.";
+                codeOutput.textContent = "https://www.w3schools.com/tags/att_input_required.asp";
+                return;
+            }
+
+            // Simple URL validation (can be more robust)
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                statusMessage.textContent = "ERROR: URL must start with http:// or https://";
+                codeOutput.textContent = "[Invalid Protocol]";
+                return;
+            }
+
+            // Set loading state
+            statusMessage.textContent = "INITIATING CONNECTION...";
+            codeOutput.textContent = "[$] Connecting to proxy and fetching target data...\n";
+            fetchButton.disabled = true;
+            buttonText.innerHTML = '<span class="glitch-text">ANALYZING...</span>';
+
+            try {
+                const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
+
+                // Step 1: Fetch the content via the proxy
+                const response = await fetch(proxyUrl);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error! Status: ${response.status}`);
+                }
+
+                // Step 2: Read the response as raw text
+                const sourceCode = await response.text();
+
+                // Step 3: Display the results
+                statusMessage.textContent = `SUCCESS: Code retrieved for ${url}`;
+                // Limit the display length to keep the output manageable and prevent browser crashes
+                const displayCode = sourceCode.length > 5000
+                    ? sourceCode.substring(0, 5000) + "\n\n[...] CODE TRUNCATED FOR DISPLAY LIMIT (5000 characters) [...]"
+                    : sourceCode;
+
+                codeOutput.textContent = displayCode;
+
+            } catch (error) {
+                // Handle network errors, proxy errors, or security issues
+                statusMessage.textContent = `CRITICAL FAILURE: Could not retrieve code.`;
+                codeOutput.textContent = `
+[ERROR LOG]
+------------------------------------------------------------------
+Target URL: ${url}
+Error Type: ${error.name}
+Message: ${error.message}
+
+POSSIBLE CAUSES:
+1. The target server denied the request (e.g., firewall/rate limit).
+2. The URL is incorrect or the domain does not exist.
+3. The public proxy service is currently unavailable.
+4. CORS restrictions were not fully bypassed (rare with this proxy).
+------------------------------------------------------------------
+Try a different URL or check your network connection.
+`;
+                console.error("Fetch Source Code Error:", error);
+
+            } finally {
+                // Reset loading state
+                fetchButton.disabled = false;
+                buttonText.textContent = 'Analyze Code';
+            }
+        }
+    </script>
+</body>
+</html>
